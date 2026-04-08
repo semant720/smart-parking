@@ -1,0 +1,5 @@
+[
+    {"name": "Parking A", "lat": 30.688, "lng": 76.726, "status": "Available"},
+    {"name": "Parking B", "lat": 30.690, "lng": 76.728, "status": "Available"},
+    {"name": "Parking C", "lat": 30.685, "lng": 76.722, "status": "Available"}
+]

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Parking</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}"></script>
+</head>
+<body>
+
+<h2>Nearest Parking</h2>
+<div id="nearest"></div>
+
+<div id="map" style="height:500px;width:100%;"></div>
+
+<script>
+let map;
+let userLocation = null;
+
+function initMap(lat=30.6873, lng=76.7256) {
+    map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 14,
+        center: { lat, lng }
+    });
+}
+
+function getUserLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+            userLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
+
+            initMap(userLocation.lat, userLocation.lng);
+
+            new google.maps.Marker({
+                position: userLocation,
+                map: map,
+                title: "You are here",
+                icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+            });
+
+            loadData();
+        });
+    } else {
+        alert("Geolocation not supported");
+    }
+}
+
+function loadData() {
+    fetch("/data")
+    .then(res => res.json())
+    .then(data => {
+        let nearest = data.nearest_parking;
+
+        document.getElementById("nearest").innerHTML =
+            `<b>${nearest.name}</b> - ${nearest.distance} KM 
+             <br><a href="https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${nearest.lat},${nearest.lng}" target="_blank">🚗 Navigate</a>`;
+
+        data.all_parking.forEach(p => {
+            let marker = new google.maps.Marker({
+                position: { lat: p.lat, lng: p.lng },
+                map: map,
+                title: p.name
+            });
+
+            let info = new google.maps.InfoWindow({
+                content: `<b>${p.name}</b><br>${p.status}<br>${p.distance} KM<br>
+                <a href="https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${p.lat},${p.lng}" target="_blank">Navigate</a>`
+            });
+
+            marker.addListener("click", () => info.open(map, marker));
+        });
+    });
+}
+
+getUserLocation();
+</script>
+
+</body>
+</html>
